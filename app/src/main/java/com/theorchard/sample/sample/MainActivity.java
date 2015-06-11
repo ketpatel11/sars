@@ -89,6 +89,7 @@ public class MainActivity extends Activity {
                     newRelease.put("release_name", trackObj.get("release_name"));
                     newRelease.put("upc", trackObj.get("upc"));
                     newRelease.put("artist_name", trackObj.get("artist_name"));
+                    newRelease.put("physical_location", 5);
 
                     JSONObject newTrack = new JSONObject();
                     newTrack.put("track_name", trackObj.get("track_name"));
@@ -96,7 +97,6 @@ public class MainActivity extends Activity {
                     newTrack.put("track_number", trackObj.get("track_id"));
                     newTrack.put("unique_track_id", trackObj.get("id"));
                     newTrack.put("track_name", trackObj.get("track_name"));
-                    newTrack.put("physical_location", 5);
 
                     String md5Hash;
                     if (trackObj.get("releaseStatus").equals("in_content")) {
@@ -104,6 +104,7 @@ public class MainActivity extends Activity {
                     } else {
                         md5Hash = md5(trackObj.get("upc") + "_" + trackObj.get("id"));
                     }
+//                    String md5Hex = new String(Hex.encodeHex(DigestUtils.md5(data)));
                     newTrack.put("md5_hash", md5Hash);
 
                     newTracks.put(newTrack);
