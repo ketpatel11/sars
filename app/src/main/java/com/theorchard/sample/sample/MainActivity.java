@@ -118,22 +118,6 @@ public class MainActivity extends Activity {
         return newRelease;
     }
 
-    protected String md5(String md5) {
-        try {
-            MessageDigest md = MessageDigest.getInstance("MD5");
-            byte[] array = md.digest(md5.getBytes());
-            StringBuilder strBuilder = new StringBuilder();
-
-            for (int i = 0; i < array.length; ++i) {
-                strBuilder.append(Integer.toHexString((array[i] & 0xFF) | 0x100).substring(1,3));
-            }
-            return strBuilder.toString();
-        } catch (NoSuchAlgorithmException e) {
-            // do nothing
-        }
-        return null;
-    }
-
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
