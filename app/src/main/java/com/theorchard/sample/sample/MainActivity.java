@@ -23,6 +23,8 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Iterator;
 
+import org.apache.commons.codec.binary.Hex;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -100,11 +102,10 @@ public class MainActivity extends Activity {
 
                     String md5Hash;
                     if (trackObj.get("releaseStatus").equals("in_content")) {
-                        md5Hash = md5(trackObj.get("upc") + "_" + trackObj.get("cd") + "_" + trackObj.get("track_id"));
+                        md5Hash = new String(Hex.encodeHex(DigestUtils.md5(trackObj.get("upc") + "_" + trackObj.get("cd") + "_" + trackObj.get("track_id"))));
                     } else {
-                        md5Hash = md5(trackObj.get("upc") + "_" + trackObj.get("id"));
+                        md5Hash = new String(Hex.encodeHex(DigestUtils.md5(trackObj.get("upc") + "_" + trackObj.get("id"))));
                     }
-//                    String md5Hex = new String(Hex.encodeHex(DigestUtils.md5(data)));
                     newTrack.put("md5_hash", md5Hash);
 
                     newTracks.put(newTrack);

@@ -26,4 +26,5 @@ dependencies {
         // since httpclient is included in the android SDK.
         exclude group: 'org.apache.httpcomponents', module: 'httpclient'
     }
+    compile ('commons-codec:commons-codec:1.10')
 }
