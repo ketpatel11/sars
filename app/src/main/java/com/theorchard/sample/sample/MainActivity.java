@@ -19,6 +19,8 @@ import java.io.InputStreamReader;
 import java.lang.reflect.Array;
 import java.net.URL;
 import java.net.URLConnection;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.Iterator;
 
 import org.json.JSONArray;
@@ -87,7 +89,24 @@ public class MainActivity extends Activity {
                     newRelease.put("release_name", trackObj.get("release_name"));
                     newRelease.put("upc", trackObj.get("upc"));
                     newRelease.put("artist_name", trackObj.get("artist_name"));
-                    newTracks.put(trackObj.get("track_name"));
+
+                    JSONObject newTrack = new JSONObject();
+                    newTrack.put("track_name", trackObj.get("track_name"));
+                    newTrack.put("track_volume", trackObj.get("cd"));
+                    newTrack.put("track_number", trackObj.get("track_id"));
+                    newTrack.put("unique_track_id", trackObj.get("id"));
+                    newTrack.put("track_name", trackObj.get("track_name"));
+                    newTrack.put("physical_location", 5);
+
+                    String md5Hash;
+                    if (trackObj.get("releaseStatus").equals("in_content")) {
+                        md5Hash = md5(trackObj.get("upc") + "_" + trackObj.get("cd") + "_" + trackObj.get("track_id"));
+                    } else {
+                        md5Hash = md5(trackObj.get("upc") + "_" + trackObj.get("id"));
+                    }
+                    newTrack.put("md5_hash", md5Hash);
+
+                    newTracks.put(newTrack);
                 }
                 newRelease.put("tracks", newTracks);
             }
@@ -95,6 +114,22 @@ public class MainActivity extends Activity {
             System.out.println(e.getMessage());
         }
         return newRelease;
+    }
+
+    protected String md5(String md5) {
+        try {
+            MessageDigest md = MessageDigest.getInstance("MD5");
+            byte[] array = md.digest(md5.getBytes());
+            StringBuilder strBuilder = new StringBuilder();
+
+            for (int i = 0; i < array.length; ++i) {
+                strBuilder.append(Integer.toHexString((array[i] & 0xFF) | 0x100).substring(1,3));
+            }
+            return strBuilder.toString();
+        } catch (NoSuchAlgorithmException e) {
+            // do nothing
+        }
+        return null;
     }
 
     @Override
