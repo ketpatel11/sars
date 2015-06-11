@@ -16,21 +16,17 @@ import android.widget.Toast;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.lang.reflect.Array;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.Iterator;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 
 public class MainActivity extends Activity {
-    private ListView l;
-    private CheckBox check1;
-    private Button button1;
-    static InputStream is = null;
-    static JSONObject jObj = null;
-    static String json = "";
-
-    String[] days = {"", ""};
+    String[] tracks = {"", ""};
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,50 +35,66 @@ public class MainActivity extends Activity {
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        addListenerOnButton();
-        l = (ListView) findViewById(R.id.listView);
-        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, days);
+        ListView l = (ListView) findViewById(R.id.listView);
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, tracks);
         l.setAdapter(adapter);
 
 
     }
 
     private String makeRequest(String url) {
-        String outdata = "";
+        String outData = "";
         try {
             URL url_g = new URL(url);
             URLConnection ukr = url_g.openConnection();
 
             BufferedReader in = new BufferedReader(new InputStreamReader(ukr.getInputStream()));
             String inputLine;
-            while ((inputLine = in.readLine()) != null)
-                outdata += inputLine;
+            while ((inputLine = in.readLine()) != null) {
+                outData += inputLine;
+            }
             in.close();
         } catch (java.io.IOException e) {
             System.out.print(e.getMessage());
         }
-        return outdata;
+        return outData;
     }
 
+    public void clickRefreshButton(View v) {
+        TextView tv = (TextView) findViewById(R.id.textView);
 
-    public void addListenerOnButton() {
-        button1 = (Button) findViewById(R.id.button);
-        button1.setOnClickListener(
-                new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        /*StringBuffer result = new StringBuffer();
-                        result.append("Dog: ").append(check1.isChecked());
-                        Toast.makeText(MainActivity.this, result.toString(),
-                                Toast.LENGTH_LONG).show();*/
-                        TextView tv = (TextView) findViewById(R.id.textView);
-                        String responseText = makeRequest("http://192.168.31.128/streams/600353005129/5");
-                        tv.setText(responseText);
-                    }
+        String responseText = makeRequest("http://192.168.31.128/tracks/600353005129");
+        JSONObject beautifiedData = responseDecorator(responseText);
+        tv.setText(beautifiedData.toString());
+    }
+
+    private JSONObject responseDecorator(String responseText) {
+        JSONObject newRelease = new JSONObject();
+        JSONArray newTracks = new JSONArray();
+
+        try {
+            JSONObject jsonObject = new JSONObject(responseText);
+
+            if (jsonObject.has("tracks")) {
+                JSONObject tracksObj = (JSONObject) jsonObject.get("tracks");
+
+                Iterator<?> keys = tracksObj.keys();
+
+                while (keys.hasNext()) {
+                    String key = (String) keys.next();
+
+                    JSONObject trackObj = (JSONObject) tracksObj.get(key);
+                    newRelease.put("release_name", trackObj.get("release_name"));
+                    newRelease.put("upc", trackObj.get("upc"));
+                    newRelease.put("artist_name", trackObj.get("artist_name"));
+                    newTracks.put(trackObj.get("track_name"));
                 }
-        );
-
-
+                newRelease.put("tracks", newTracks);
+            }
+        } catch (org.json.JSONException e) {
+            System.out.println(e.getMessage());
+        }
+        return newRelease;
     }
 
     @Override
@@ -106,6 +118,4 @@ public class MainActivity extends Activity {
 
         return super.onOptionsItemSelected(item);
     }
-
-
 }
