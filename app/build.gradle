@@ -5,7 +5,7 @@ android {
     buildToolsVersion "23.0.0 rc2"
 
     defaultConfig {
-        applicationId "com.theorchard.www.sampleandroidreleasesounds"
+        applicationId "com.theorchard.sample.sample"
         minSdkVersion 22
         targetSdkVersion 22
         versionCode 1
@@ -21,5 +21,9 @@ android {
 
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
-    compile 'com.android.support:support-v4:22.2.0'
+    compile ('org.apache.httpcomponents:httpmime:4.3.5') {
+        // avoid "is ignored for the default configuration X" warnings
+        // since httpclient is included in the android SDK.
+        exclude group: 'org.apache.httpcomponents', module: 'httpclient'
+    }
 }

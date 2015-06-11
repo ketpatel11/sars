@@ -1,4 +1,4 @@
-package com.theorchard.www.sampleandroidreleasesounds;
+package com.theorchard.sample.sample;
 
 import android.app.Application;
 import android.test.ApplicationTestCase;
