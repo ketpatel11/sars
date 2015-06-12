@@ -26,7 +26,7 @@ import org.json.JSONObject;
 
 public class MainActivity extends Activity {
 
-    ArrayList<String> data = new ArrayList<String>();
+    ArrayList<String> data = new ArrayList<>();
 
     static String base_url = "http://192.168.31.128/tracks/{upc}";
 
@@ -39,7 +39,7 @@ public class MainActivity extends Activity {
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, data);
+        adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, data);
 
     }
 
@@ -63,7 +63,6 @@ public class MainActivity extends Activity {
     }
 
     public void clickRefreshButton(View v) {
-        //TextView tv = (TextView) findViewById(R.id.textView);
         TextView upc_textbox = (TextView) findViewById(R.id.upcTextView);
         String responseText = makeRequest(base_url.replace("{upc}", upc_textbox.getText()));
         JSONObject beautifiedData = responseDecorator(responseText);
@@ -71,12 +70,15 @@ public class MainActivity extends Activity {
         //tv.setText(beautifiedData.toString());
         ListView l = (ListView) findViewById(R.id.listView);
         try {
-            JSONObject responseObject = beautifiedData;
-            String release_name = responseObject.getString("release_name");
-            String upc = responseObject.getString("upc");
-            String artist_name = responseObject.getString("artist_name");
-            JSONArray trackObjects = responseObject.getJSONArray("tracks");
+            String upc = beautifiedData.getString("upc");
 
+            TextView tv1 = (TextView) findViewById(R.id.releaseName);
+            tv1.setText(beautifiedData.getString("release_name"));
+
+            TextView tv2 = (TextView) findViewById(R.id.artistName);
+            tv2.setText("Artist: " + beautifiedData.getString("artist_name"));
+
+            JSONArray trackObjects = beautifiedData.getJSONArray("tracks");
             for(int i=0; i<trackObjects.length();i++){
                 JSONObject track = (JSONObject) trackObjects.get(i);
                 data.add(track.getString("track_number")+". "+track.getString("track_name")+" "+track.getString("length_minute")+":"+track.getString("length_seconds"));
