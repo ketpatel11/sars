@@ -7,20 +7,15 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
-import android.widget.CheckBox;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.BufferedReader;
-import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.lang.reflect.Array;
 import java.net.URL;
 import java.net.URLConnection;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
 import java.util.Iterator;
 
 import org.apache.commons.codec.binary.Hex;
@@ -30,7 +25,12 @@ import org.json.JSONObject;
 
 
 public class MainActivity extends Activity {
-    String[] tracks = {"", ""};
+
+    ArrayList<String> data = new ArrayList<String>();
+
+    static String base_url = "http://192.168.31.128/tracks/{upc}";
+
+    ArrayAdapter<String> adapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,10 +39,7 @@ public class MainActivity extends Activity {
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        ListView l = (ListView) findViewById(R.id.listView);
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, tracks);
-        l.setAdapter(adapter);
-
+        adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, data);
 
     }
 
@@ -59,17 +56,40 @@ public class MainActivity extends Activity {
             }
             in.close();
         } catch (java.io.IOException e) {
-            System.out.print(e.getMessage());
+            Toast.makeText(MainActivity.this, e.getMessage(),
+                    Toast.LENGTH_LONG).show();
         }
         return outData;
     }
 
     public void clickRefreshButton(View v) {
-        TextView tv = (TextView) findViewById(R.id.textView);
-
-        String responseText = makeRequest("http://192.168.31.128/tracks/600353005129");
+        //TextView tv = (TextView) findViewById(R.id.textView);
+        TextView upc_textbox = (TextView) findViewById(R.id.upcTextView);
+        String responseText = makeRequest(base_url.replace("{upc}", upc_textbox.getText()));
         JSONObject beautifiedData = responseDecorator(responseText);
-        tv.setText(beautifiedData.toString());
+
+        //tv.setText(beautifiedData.toString());
+        ListView l = (ListView) findViewById(R.id.listView);
+        try {
+            JSONObject responseObject = beautifiedData;
+            String release_name = responseObject.getString("release_name");
+            String upc = responseObject.getString("upc");
+            String artist_name = responseObject.getString("artist_name");
+            JSONArray trackObjects = responseObject.getJSONArray("tracks");
+
+            for(int i=0; i<trackObjects.length();i++){
+                JSONObject track = (JSONObject) trackObjects.get(i);
+                data.add(track.getString("track_number")+". "+track.getString("track_name")+" "+track.getString("length_minute")+":"+track.getString("length_seconds"));
+                adapter.notifyDataSetChanged();
+            }
+
+        } catch (org.json.JSONException e) {
+            Toast.makeText(MainActivity.this, e.getMessage(),
+                    Toast.LENGTH_LONG).show();
+        }
+
+        l.setAdapter(adapter);
+
     }
 
     private JSONObject responseDecorator(String responseText) {
@@ -99,6 +119,9 @@ public class MainActivity extends Activity {
                     newTrack.put("track_number", trackObj.get("track_id"));
                     newTrack.put("unique_track_id", trackObj.get("id"));
                     newTrack.put("track_name", trackObj.get("track_name"));
+                    newTrack.put("length_minute", trackObj.get("length_minute"));
+                    newTrack.put("length_seconds", trackObj.get("length_seconds"));
+                    newTrack.put("physical_location", 5);
 
                     String md5Hash;
                     if (trackObj.get("releaseStatus").equals("in_content")) {
@@ -117,6 +140,7 @@ public class MainActivity extends Activity {
         }
         return newRelease;
     }
+
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
